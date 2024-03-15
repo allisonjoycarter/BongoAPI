@@ -20,8 +20,10 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: Build and Publish Docker Image
+      - name: Setup Docker
         uses: docker/build-push-action@v5
+
+      - name: Build and Publish Image
         env:
           API_KEY: ${{ secrets.API_KEY }}
           WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
