@@ -1,0 +1,27 @@
+
+name: Deploy to Azure using Docker
+description: 'Dockerize BongoAPI server'
+
+on:
+  push:
+    branches:
+      - 'master'
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu' # See 'Supported distributions' for available options
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Build and Publish Docker Image
+        uses: docker/build-push-action@v5
+        run: './gradlew publishImage'
