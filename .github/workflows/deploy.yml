@@ -8,7 +8,7 @@ on:
       - 'v*'
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,12 +20,14 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: Setup Docker
-        uses: docker/build-push-action@v5
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Build and Publish Image
         env:
           API_KEY: ${{ secrets.API_KEY }}
           WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
           OPEN_AI_API_KEY: ${{ secrets.OPEN_AI_API_KEY }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
         run: './gradlew publishImage'
