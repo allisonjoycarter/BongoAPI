@@ -1,11 +1,10 @@
 
-name: Deploy to Azure using Docker
-description: 'Dockerize BongoAPI server'
+name: Deploy to Dockerhub
 
 on:
   push:
     branches:
-      - 'master'
+      - 'main'
     tags:
       - 'v*'
 
@@ -24,4 +23,8 @@ jobs:
 
       - name: Build and Publish Docker Image
         uses: docker/build-push-action@v5
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+          WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
+          OPEN_AI_API_KEY: ${{ secrets.OPEN_AI_API_KEY }}
         run: './gradlew publishImage'
