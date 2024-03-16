@@ -1,11 +1,10 @@
 package com.catscoffeeandkitchen.features.jokes
 
-import com.catscoffeeandkitchen.bongoapi.features.common.ReturnableHttpException
-import com.catscoffeeandkitchen.bongoapi.features.jokes.JokeCategory
-import io.ktor.client.*
-import io.ktor.client.plugins.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
+import com.catscoffeeandkitchen.features.common.toReturnableHttpException
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.ResponseException
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsText
 
 class JokeRepository(
     val httpClient: HttpClient
@@ -15,11 +14,7 @@ class JokeRepository(
             val result = httpClient.get("https://v2.jokeapi.dev/joke/${category.name}?format=txt&type=single")
             return result.bodyAsText()
         } catch (error: ResponseException) {
-            throw ReturnableHttpException(
-                statusCode = error.response.status,
-                responseBody = error.response.bodyAsText(),
-                message = error.message
-            )
+            throw error.toReturnableHttpException()
         }
     }
 }

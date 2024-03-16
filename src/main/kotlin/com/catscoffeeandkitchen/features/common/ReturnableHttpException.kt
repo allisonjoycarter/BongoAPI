@@ -1,9 +1,9 @@
-package com.catscoffeeandkitchen.bongoapi.features.common
+package com.catscoffeeandkitchen.features.common
 
-import io.ktor.http.*
+import io.ktor.http.HttpStatusCode
 
 class ReturnableHttpException(
     val statusCode: HttpStatusCode,
     val responseBody: String? = null,
-    message: String? = null
-): Exception(message)
+    cause: Throwable? = null
+): Exception(cause = cause)

@@ -1,15 +1,17 @@
 package com.catscoffeeandkitchen.features.weather
 
-import com.catscoffeeandkitchen.bongoapi.features.common.toReturnableHttpException
-import com.catscoffeeandkitchen.bongoapi.features.weather.models.Forecast
-import com.catscoffeeandkitchen.bongoapi.features.weather.models.WeatherAPIResponse
-import com.catscoffeeandkitchen.bongoapi.features.weather.models.WeatherResponse
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.plugins.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import org.koin.java.KoinJavaComponent
+import com.catscoffeeandkitchen.features.common.toReturnableHttpException
+import com.catscoffeeandkitchen.features.weather.models.Forecast
+import com.catscoffeeandkitchen.features.weather.models.WeatherAPIResponse
+import com.catscoffeeandkitchen.features.weather.models.WeatherResponse
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.plugins.ResponseException
+import io.ktor.client.request.get
+import io.ktor.client.request.headers
+import io.ktor.http.HttpHeaders
+import io.ktor.http.URLProtocol
+import io.ktor.http.path
 
 class WeatherRepository(
     private val apiKey: String,
@@ -27,6 +29,7 @@ class WeatherRepository(
                     parameters.append("key", apiKey)
                     parameters.append("q", location)
                     parameters.append("aqi", "no")
+                    @Suppress("MagicNumber")
                     if (days > 1) parameters.append("days", days.coerceIn(1, 3).toString())
                 }
 

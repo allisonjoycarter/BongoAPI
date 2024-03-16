@@ -1,8 +1,13 @@
 package com.catscoffeeandkitchen
 
 import com.catscoffeeandkitchen.di.appModule
-import com.catscoffeeandkitchen.plugins.*
-import io.ktor.server.application.*
+import com.catscoffeeandkitchen.plugins.configureHTTP
+import com.catscoffeeandkitchen.plugins.configureMonitoring
+import com.catscoffeeandkitchen.plugins.configureRouting
+import com.catscoffeeandkitchen.plugins.configureSecurity
+import com.catscoffeeandkitchen.plugins.configureSerialization
+import io.ktor.server.application.Application
+import io.ktor.server.application.install
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 

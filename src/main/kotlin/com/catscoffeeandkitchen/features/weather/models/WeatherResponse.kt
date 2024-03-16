@@ -1,6 +1,6 @@
-package com.catscoffeeandkitchen.bongoapi.features.weather.models
+package com.catscoffeeandkitchen.features.weather.models
 
-import com.catscoffeeandkitchen.bongoapi.features.common.UnixEpochDateTimeSerializer
+import com.catscoffeeandkitchen.features.common.UnixEpochDateTimeSerializer
 import kotlinx.serialization.Serializable
 import java.time.OffsetDateTime
 

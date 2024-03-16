@@ -1,11 +1,19 @@
-package com.catscoffeeandkitchen.features.name_generator
+package com.catscoffeeandkitchen.features.namegenerator
 
-import com.aallam.openai.api.chat.*
+import com.aallam.openai.api.chat.ChatCompletionRequest
+import com.aallam.openai.api.chat.ChatMessage
+import com.aallam.openai.api.chat.ChatRole
+import com.aallam.openai.api.chat.Tool
+import com.aallam.openai.api.chat.ToolCall
 import com.aallam.openai.api.core.Parameters
+import com.aallam.openai.api.exception.OpenAIException
 import com.aallam.openai.api.model.ModelId
 import com.aallam.openai.client.OpenAI
-import com.catscoffeeandkitchen.bongoapi.features.name_generator.RandomNameResult
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
+import kotlinx.serialization.json.putJsonObject
 import java.io.File
 
 class NameGeneratorRepository(
@@ -27,7 +35,8 @@ class NameGeneratorRepository(
                 messages = listOf(
                     ChatMessage(
                         role = ChatRole.User,
-                        content = "Generate a random username for a ${context.orEmpty()} character in a game $typeDescription."
+                        content = "Generate a random username for a ${context.orEmpty()} character " +
+                                "in a game $typeDescription."
                     )
                 ),
                 tools = listOf(
@@ -41,7 +50,7 @@ class NameGeneratorRepository(
                                     put("type", "array")
                                     put("description", "Random usernames for a game character.")
                                     put("minItems", amount)
-                                    put("maxItems", amount + 5)
+                                    put("maxItems", amount + EXTRA_GENERATION)
                                     putJsonObject("items") {
                                         put("type", "string")
                                     }
@@ -96,11 +105,16 @@ class NameGeneratorRepository(
         }
     }
 
-    suspend fun generateName(type: NameCategory, context: String?, amount: Int): List<String> {
+    @Suppress("SwallowedException", "TooGenericExceptionThrown")
+    suspend fun generateName(category: NameCategory, context: String?, amount: Int): List<String> {
         return try {
-            getAIGeneratedName(type, context, amount) ?: throw Exception("Names were null.")
-        } catch (error: Exception) {
-            getRandomNameFromAssets(type, context, amount)
+            getAIGeneratedName(category, context, amount) ?: throw Exception("Names were null.")
+        } catch (error: OpenAIException) {
+            getRandomNameFromAssets(category, context, amount)
         }
+    }
+
+    companion object {
+        const val EXTRA_GENERATION = 5
     }
 }

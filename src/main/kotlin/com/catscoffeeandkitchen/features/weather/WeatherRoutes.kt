@@ -1,15 +1,11 @@
 package com.catscoffeeandkitchen.features.weather
 
-import com.catscoffeeandkitchen.bongoapi.features.common.ReturnableHttpException
-import com.catscoffeeandkitchen.features.weather.WeatherEndpoint
-import com.catscoffeeandkitchen.features.weather.WeatherRepository
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.resources.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import io.ktor.server.routing.get
-import io.ktor.util.logging.*
+import com.catscoffeeandkitchen.features.common.ReturnableHttpException
+import io.ktor.server.application.call
+import io.ktor.server.resources.get
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
+import io.ktor.util.logging.error
 import org.koin.ktor.ext.inject
 
 fun Route.weatherRoutes() {
@@ -24,10 +20,8 @@ fun Route.weatherRoutes() {
 
             call.respond(forecast)
         } catch (httpError: ReturnableHttpException) {
+            call.application.environment.log.error(httpError)
             call.respond(httpError.statusCode, httpError.responseBody ?: httpError.message ?: "")
-        } catch (error: Exception) {
-            call.application.environment.log.error(error)
-            call.response.status(HttpStatusCode(500, "Unexpected error."))
         }
     }
 
@@ -40,10 +34,8 @@ fun Route.weatherRoutes() {
 
             call.respond(forecast)
         } catch (httpError: ReturnableHttpException) {
+            call.application.environment.log.error(httpError)
             call.respond(httpError.statusCode, httpError.responseBody ?: httpError.message ?: "")
-        } catch (error: Exception) {
-            call.application.environment.log.error(error)
-            call.response.status(HttpStatusCode(500, "Unexpected error."))
         }
     }
 }

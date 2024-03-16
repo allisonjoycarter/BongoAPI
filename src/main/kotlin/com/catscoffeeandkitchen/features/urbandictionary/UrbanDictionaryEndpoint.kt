@@ -1,6 +1,6 @@
-package com.catscoffeeandkitchen.features.urban_dictionary
+package com.catscoffeeandkitchen.features.urbandictionary
 
-import io.ktor.resources.*
+import io.ktor.resources.Resource
 
 @Resource("/urban")
 class UrbanDictionaryEndpoint {

@@ -1,4 +1,4 @@
-package com.catscoffeeandkitchen.features.urban_dictionary
+package com.catscoffeeandkitchen.features.urbandictionary
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

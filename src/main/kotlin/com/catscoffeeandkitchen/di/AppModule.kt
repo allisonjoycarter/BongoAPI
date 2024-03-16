@@ -7,15 +7,15 @@ import com.aallam.openai.client.OpenAIConfig
 import com.catscoffeeandkitchen.features.advice.AdviceRepository
 import com.catscoffeeandkitchen.features.facts.FactsRepository
 import com.catscoffeeandkitchen.features.jokes.JokeRepository
-import com.catscoffeeandkitchen.features.name_generator.NameGeneratorRepository
-import com.catscoffeeandkitchen.features.urban_dictionary.UrbanDictionaryRepository
+import com.catscoffeeandkitchen.features.namegenerator.NameGeneratorRepository
+import com.catscoffeeandkitchen.features.urbandictionary.UrbanDictionaryRepository
 import com.catscoffeeandkitchen.features.weather.WeatherRepository
 import com.typesafe.config.ConfigFactory
-import io.ktor.client.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.serialization.kotlinx.json.*
-import io.ktor.server.config.*
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.config.HoconApplicationConfig
 import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 

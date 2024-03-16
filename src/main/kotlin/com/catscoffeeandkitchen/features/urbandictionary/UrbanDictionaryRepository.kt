@@ -1,11 +1,10 @@
-package com.catscoffeeandkitchen.features.urban_dictionary
+package com.catscoffeeandkitchen.features.urbandictionary
 
-import com.catscoffeeandkitchen.bongoapi.features.common.toReturnableHttpException
-import com.catscoffeeandkitchen.bongoapi.features.urban_dictionary.DefineResponse
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.plugins.*
-import io.ktor.client.request.*
+import com.catscoffeeandkitchen.features.common.toReturnableHttpException
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.plugins.ResponseException
+import io.ktor.client.request.get
 
 class UrbanDictionaryRepository(private val httpClient: HttpClient) {
 

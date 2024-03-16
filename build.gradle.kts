@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.cli.js.internal.main
 
 val ktor_version: String by project
 val kotlin_version: String by project
@@ -11,7 +12,8 @@ val bongo_api_version = "0.0.1"
 plugins {
     kotlin("jvm") version "1.9.23"
     id("io.ktor.plugin") version "2.3.9"
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.23" apply true
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.23"
+    id("io.gitlab.arturbosch.detekt") version "1.23.5"
 }
 
 group = "com.catscoffeeandkitchen"
@@ -44,6 +46,10 @@ ktor {
             )
         )
     }
+}
+
+detekt {
+    config.setFrom("src/main/resources/detekt-config.yml")
 }
 
 repositories {

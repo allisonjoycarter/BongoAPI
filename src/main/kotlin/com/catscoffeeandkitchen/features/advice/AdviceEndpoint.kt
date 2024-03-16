@@ -1,6 +1,6 @@
 package com.catscoffeeandkitchen.features.advice
 
-import io.ktor.resources.*
+import io.ktor.resources.Resource
 
 @Resource("/advice")
 class AdviceEndpoint {

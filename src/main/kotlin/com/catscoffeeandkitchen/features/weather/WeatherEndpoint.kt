@@ -1,6 +1,6 @@
 package com.catscoffeeandkitchen.features.weather
 
-import io.ktor.resources.*
+import io.ktor.resources.Resource
 
 @Resource("/weather")
 class WeatherEndpoint {

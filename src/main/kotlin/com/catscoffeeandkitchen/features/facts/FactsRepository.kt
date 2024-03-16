@@ -1,12 +1,12 @@
 package com.catscoffeeandkitchen.features.facts
 
-import com.catscoffeeandkitchen.bongoapi.features.common.toReturnableHttpException
-import com.catscoffeeandkitchen.bongoapi.features.facts.RandomFactResponse
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.plugins.*
-import io.ktor.client.request.*
-import io.ktor.http.*
+import com.catscoffeeandkitchen.features.common.toReturnableHttpException
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.plugins.ResponseException
+import io.ktor.client.request.get
+import io.ktor.client.request.headers
+import io.ktor.http.HttpHeaders
 
 class FactsRepository(private val httpClient: HttpClient) {
 

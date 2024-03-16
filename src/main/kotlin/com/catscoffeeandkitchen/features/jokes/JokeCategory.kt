@@ -1,4 +1,4 @@
-package com.catscoffeeandkitchen.bongoapi.features.jokes
+package com.catscoffeeandkitchen.features.jokes
 
 enum class JokeCategory {
     Programming,

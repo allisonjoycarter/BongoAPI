@@ -68,8 +68,8 @@ class ApiKeyAuth internal constructor(
         var headerName: String = "X-Api-Key"
 
         /**
-         * Sets a validation function that will check given API key retrieved from [headerName] instance and return [Principal],
-         * or null if credential does not correspond to an authenticated principal.
+         * Sets a validation function that will check given API key retrieved from [headerName] instance and
+         * return [Principal], or null if credential does not correspond to an authenticated principal.
          */
         fun validate(body: suspend ApplicationCall.(String) -> Principal?) {
             authenticationFunction = body

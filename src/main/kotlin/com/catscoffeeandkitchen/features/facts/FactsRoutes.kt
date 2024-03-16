@@ -1,12 +1,11 @@
 package com.catscoffeeandkitchen.features.facts
 
-import com.catscoffeeandkitchen.bongoapi.features.common.ReturnableHttpException
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.resources.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import io.ktor.util.logging.*
+import com.catscoffeeandkitchen.features.common.ReturnableHttpException
+import io.ktor.server.application.call
+import io.ktor.server.resources.get
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.Route
+import io.ktor.util.logging.error
 import org.koin.ktor.ext.inject
 
 fun Route.factsRoutes() {
@@ -17,10 +16,8 @@ fun Route.factsRoutes() {
             val fact = factsRepository.getRandomFact()
             call.respondText(fact)
         } catch (httpError: ReturnableHttpException) {
+            call.application.environment.log.error(httpError)
             call.response.status(httpError.statusCode)
-        } catch (error: Exception) {
-            call.application.environment.log.error(error)
-            call.response.status(HttpStatusCode(500, "Unexpected error."))
         }
     }
 }

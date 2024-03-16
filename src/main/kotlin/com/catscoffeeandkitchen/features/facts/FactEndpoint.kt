@@ -1,6 +1,6 @@
 package com.catscoffeeandkitchen.features.facts
 
-import io.ktor.resources.*
+import io.ktor.resources.Resource
 
 @Resource("/facts")
 class FactEndpoint {

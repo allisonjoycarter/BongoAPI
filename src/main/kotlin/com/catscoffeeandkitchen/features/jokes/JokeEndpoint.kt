@@ -1,6 +1,6 @@
 package com.catscoffeeandkitchen.features.jokes
 
-import io.ktor.resources.*
+import io.ktor.resources.Resource
 
 @Resource("/jokes")
 class JokeEndpoint {

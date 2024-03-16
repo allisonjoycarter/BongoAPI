@@ -1,4 +1,4 @@
-package com.catscoffeeandkitchen.bongoapi.features.name_generator
+package com.catscoffeeandkitchen.features.namegenerator
 
 import kotlinx.serialization.Serializable
 

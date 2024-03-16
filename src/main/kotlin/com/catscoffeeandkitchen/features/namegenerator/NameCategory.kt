@@ -1,4 +1,4 @@
-package com.catscoffeeandkitchen.features.name_generator
+package com.catscoffeeandkitchen.features.namegenerator
 
 enum class NameCategory {
     Fantasy,

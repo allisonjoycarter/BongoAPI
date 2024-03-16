@@ -1,6 +1,6 @@
-package com.catscoffeeandkitchen.features.name_generator
+package com.catscoffeeandkitchen.features.namegenerator
 
-import io.ktor.resources.*
+import io.ktor.resources.Resource
 
 @Resource("/name-generator")
 class NameGeneratorEndpoint {

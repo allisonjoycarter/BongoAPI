@@ -1,4 +1,4 @@
-package com.catscoffeeandkitchen.bongoapi.features.common
+package com.catscoffeeandkitchen.features.common
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind

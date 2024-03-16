@@ -1,13 +1,11 @@
 package com.catscoffeeandkitchen.features.jokes
 
-import com.catscoffeeandkitchen.bongoapi.features.common.ReturnableHttpException
-import com.catscoffeeandkitchen.bongoapi.features.jokes.JokeCategory
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.resources.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import io.ktor.util.logging.*
+import com.catscoffeeandkitchen.features.common.ReturnableHttpException
+import io.ktor.server.application.call
+import io.ktor.server.resources.get
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.Route
+import io.ktor.util.logging.error
 import org.koin.ktor.ext.inject
 
 fun Route.jokeRoutes() {
@@ -17,10 +15,8 @@ fun Route.jokeRoutes() {
         try {
             call.respondText(jokesDataSource.getJoke(JokeCategory.Any))
         } catch (httpError: ReturnableHttpException) {
+            call.application.environment.log.error(httpError)
             call.response.status(httpError.statusCode)
-        } catch (error: Exception) {
-            call.application.environment.log.error(error)
-            call.response.status(HttpStatusCode(500, "Unexpected error."))
         }
     }
 
@@ -32,10 +28,8 @@ fun Route.jokeRoutes() {
 
             call.respondText(jokesDataSource.getJoke(category))
         } catch (httpError: ReturnableHttpException) {
+            call.application.environment.log.error(httpError)
             call.response.status(httpError.statusCode)
-        } catch (error: Exception) {
-            call.application.environment.log.error(error)
-            call.response.status(HttpStatusCode(500, "Unexpected error."))
         }
     }
 }

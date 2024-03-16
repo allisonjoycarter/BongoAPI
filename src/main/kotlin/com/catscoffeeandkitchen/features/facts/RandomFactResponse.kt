@@ -1,4 +1,4 @@
-package com.catscoffeeandkitchen.bongoapi.features.facts
+package com.catscoffeeandkitchen.features.facts
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

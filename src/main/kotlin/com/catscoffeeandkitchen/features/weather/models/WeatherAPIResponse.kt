@@ -1,4 +1,4 @@
-package com.catscoffeeandkitchen.bongoapi.features.weather.models
+package com.catscoffeeandkitchen.features.weather.models
 
 import kotlinx.serialization.Serializable
 
