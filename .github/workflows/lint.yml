@@ -25,10 +25,10 @@ jobs:
       - name: Run Detekt
         run: "./gradlew detekt"
 
-      # Make sure we always run this upload task,
-      # because the previous step may fail if there are findings.
       - name: Upload SARIF to GitHub using the upload-sarif action
-        uses: github/codeql-action/upload-sarif@v3
-        if: success() || failure()
+        # https://github.com/github/codeql-action/issues/2117
+        # uses: github/codeql-action/upload-sarif@v3
+        uses: jsoref/github-codeql-action/upload-sarif@favor-workflow-ref
+        if: github.ref == 'refs/heads/main' && (success() || failure())
         with:
           sarif_file: build/reports/detekt/detekt.sarif
