@@ -24,14 +24,14 @@ jobs:
         run: './gradlew buildFatJar --no-daemon'
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
-          aws-region: "us-east-1"
+          aws-region: us-east-1
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - name: Upload package to S3 bucket
-        run: aws s3 cp build/libs/com.catscoffeeandkitchen.bongoapi-all.jar s3://${{ secrets.S3_BUCKET }}
+      - name: Upload JAR to S3 bucket
+        run: aws s3 cp build/libs/com.catscoffeeandkitchen.bongoapi-all.jar s3://${{ secrets.S3_BUCKET }}/bongo-${{ github.sha }}.jar
 
       - name: Create new ElasticBeanstalk Application Version
         run: |
