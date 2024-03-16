@@ -1,0 +1,39 @@
+name: "Upload FAT JAR"
+
+on:
+  push:
+    branches:
+      - 'main'
+    tags:
+      - 'v*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Build JAR
+        run: './gradlew buildFatJar --no-daemon'
+
+      - name: Generate deployment package
+        run: zip deploy.zip build/libs/com.catscoffeeandkitchen.bongoapi-all.jar
+
+      - name: Deploy to EB
+        uses: einaregilsson/beanstalk-deploy@v21
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: BongoAPI
+          environment_name: BongoAPI-prod
+          version_label: "ver-${{ github.sha }}"
+          region: us-east-1
+          deployment_package: deploy.zip
+

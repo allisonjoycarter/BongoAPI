@@ -5,9 +5,9 @@ import io.ktor.resources.*
 @Resource("/weather")
 class WeatherEndpoint {
 
-    @Resource("current/{location}")
-    class Current(val parent: WeatherEndpoint, val location: String)
+    @Resource("current")
+    class Current(val parent: WeatherEndpoint, val location: String?)
 
-    @Resource("forecast/{location}")
-    class Forecast(val parent: WeatherEndpoint, val location: String, val days: Int = 3)
+    @Resource("forecast")
+    class Forecast(val parent: WeatherEndpoint, val location: String?, val days: Int = 3)
 }

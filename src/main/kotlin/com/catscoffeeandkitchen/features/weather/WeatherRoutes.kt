@@ -17,7 +17,10 @@ fun Route.weatherRoutes() {
 
     get<WeatherEndpoint.Current> { weather ->
         try {
-            val forecast = weatherRepository.getWeatherAt(weather.location, days = 1)
+            val forecast = weatherRepository.getWeatherAt(
+                location = weather.location ?: "grand rapids",
+                days = 1
+            )
 
             call.respond(forecast)
         } catch (httpError: ReturnableHttpException) {
@@ -30,7 +33,10 @@ fun Route.weatherRoutes() {
 
     get<WeatherEndpoint.Forecast> { weather ->
         try {
-            val forecast = weatherRepository.getWeatherAt(weather.location, weather.days)
+            val forecast = weatherRepository.getWeatherAt(
+                weather.location ?: "grand rapids",
+                weather.days
+            )
 
             call.respond(forecast)
         } catch (httpError: ReturnableHttpException) {
