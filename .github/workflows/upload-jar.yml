@@ -23,17 +23,23 @@ jobs:
       - name: Build JAR
         run: './gradlew buildFatJar --no-daemon'
 
-      - name: Generate deployment package
-        run: zip deploy.zip build/libs/com.catscoffeeandkitchen.bongoapi-all.jar
-
-      - name: Deploy to EB
-        uses: einaregilsson/beanstalk-deploy@v21
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: BongoAPI
-          environment_name: BongoAPI-prod
-          version_label: "ver-${{ github.sha }}"
-          region: us-east-1
-          deployment_package: deploy.zip
+          aws-access-key-id: ${{ secrets.ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
+          aws-region: "us-east-1"
 
+      - name: Upload package to S3 bucket
+        run: aws s3 cp build/libs/com.catscoffeeandkitchen.bongoapi-all.jar s3://${{ secrets.S3_BUCKET }}
+
+      - name: Create new ElasticBeanstalk Application Version
+        run: |
+          aws elasticbeanstalk create-application-version \
+          --application-name BongoAPI \
+          --source-bundle S3Bucket="${{ secrets.S3_BUCKET }}",S3Key="bongo-${{ github.sha }}.jar" \
+          --version-label "ver-${{ github.sha }}" \
+          --description "commit-sha-${{ github.sha }}"
+
+      - name: Deploy new ElasticBeanstalk Application Version
+        run: aws elasticbeanstalk update-environment --environment-name BongoAPI-prod --version-label "ver-${{ github.sha }}"

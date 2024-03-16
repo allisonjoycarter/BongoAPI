@@ -2,10 +2,10 @@ name: Deploy to Dockerhub
 
 on:
   push:
-    branches:
-      - 'main'
-    tags:
-      - 'v*'
+#    branches:
+#      - 'main'
+#    tags:
+#      - 'v*'
 
 jobs:
   deploy:
@@ -25,9 +25,6 @@ jobs:
 
       - name: Build and Publish Image
         env:
-          API_KEY: ${{ secrets.API_KEY }}
-          WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
-          OPEN_AI_API_KEY: ${{ secrets.OPEN_AI_API_KEY }}
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
         run: './gradlew publishImage --no-daemon'
