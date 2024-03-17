@@ -14,6 +14,8 @@ import com.catscoffeeandkitchen.features.weather.WeatherRepository
 import com.typesafe.config.ConfigFactory
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.BrowserUserAgent
+import io.ktor.client.plugins.UserAgent
 import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.cookies.HttpCookies
@@ -39,6 +41,11 @@ val appModule = module {
                     prettyPrint = isDebug
                     ignoreUnknownKeys = true
                 })
+            }
+
+            // alternatively, BrowserUserAgent()
+            install(UserAgent) {
+                agent = "Bongo API/1.0 - bravebongo.com/about"
             }
         }
     }

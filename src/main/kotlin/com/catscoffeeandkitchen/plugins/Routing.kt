@@ -23,6 +23,10 @@ fun Application.configureRouting() {
             call.respondText("OK")
         }
 
+        get("/about") {
+            call.respondText("For support, contact doubleterrainbow@gmail.com.")
+        }
+
         jokeRoutes()
 
         authenticate("auth-api-key") {
