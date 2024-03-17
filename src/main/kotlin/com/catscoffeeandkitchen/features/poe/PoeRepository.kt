@@ -52,7 +52,7 @@ class PoeRepository(private val httpClient: HttpClient) {
     private suspend fun getCurrentLeagueName(): String = getLeagues().first()
 
     private suspend fun getTradeData(): List<TradeItemID> {
-        val response = httpClient.get("https://pathofexile.com/api/trade/data/static")
+        val response = httpClient.get("https://www.pathofexile.com/api/trade/data/static")
         return response.body<StaticTradeResponse>().result.flatMap { it.entries }
     }
 
