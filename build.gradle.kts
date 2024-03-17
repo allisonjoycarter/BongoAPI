@@ -81,6 +81,8 @@ dependencies {
 
     implementation("io.ktor:ktor-server-auth:$ktor_version")
 
+    implementation("me.xdrop:fuzzywuzzy:1.4.0")
+
     testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 }

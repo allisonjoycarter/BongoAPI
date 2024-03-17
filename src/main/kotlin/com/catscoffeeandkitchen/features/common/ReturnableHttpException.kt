@@ -6,4 +6,4 @@ class ReturnableHttpException(
     val statusCode: HttpStatusCode,
     val responseBody: String? = null,
     cause: Throwable? = null
-): Exception(cause = cause)
+): Throwable(cause = cause)

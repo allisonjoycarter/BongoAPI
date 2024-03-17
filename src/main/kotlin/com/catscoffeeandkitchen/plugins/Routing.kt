@@ -6,6 +6,7 @@ import com.catscoffeeandkitchen.features.advice.adviceRoutes
 import com.catscoffeeandkitchen.features.facts.factsRoutes
 import com.catscoffeeandkitchen.features.jokes.jokeRoutes
 import com.catscoffeeandkitchen.features.namegenerator.nameGeneratorRoutes
+import com.catscoffeeandkitchen.features.poe.poeRoutes
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.auth.authenticate
@@ -23,6 +24,7 @@ fun Application.configureRouting() {
             nameGeneratorRoutes()
             urbanDictionaryRoutes()
             weatherRoutes()
+            poeRoutes()
         }
     }
 }
