@@ -16,6 +16,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.config.HoconApplicationConfig
 import kotlinx.serialization.json.Json
@@ -32,6 +33,7 @@ val appModule = module {
             expectSuccess = true
 
             install(HttpCache)
+            install(HttpCookies)
             install(ContentNegotiation) {
                 json(Json {
                     prettyPrint = isDebug

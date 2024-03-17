@@ -8,14 +8,21 @@ import com.catscoffeeandkitchen.features.jokes.jokeRoutes
 import com.catscoffeeandkitchen.features.namegenerator.nameGeneratorRoutes
 import com.catscoffeeandkitchen.features.poe.poeRoutes
 import io.ktor.server.application.Application
+import io.ktor.server.application.call
 import io.ktor.server.application.install
 import io.ktor.server.auth.authenticate
 import io.ktor.server.resources.Resources
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 
 fun Application.configureRouting() {
     install(Resources)
     routing {
+        get("/") {
+            call.respondText("OK")
+        }
+
         jokeRoutes()
 
         authenticate("auth-api-key") {
