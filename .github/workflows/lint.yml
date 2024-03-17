@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "*"
+#      - '!badges'
   workflow_call:
 
 jobs:
@@ -25,10 +26,47 @@ jobs:
       - name: Run Detekt
         run: "./gradlew detekt"
 
-      - name: Upload SARIF to GitHub using the upload-sarif action
-        # https://github.com/github/codeql-action/issues/2117
-        # uses: github/codeql-action/upload-sarif@v3
-        uses: jsoref/github-codeql-action/upload-sarif@favor-workflow-ref
-        if: github.ref == 'refs/heads/main' && (success() || failure())
-        with:
-          sarif_file: build/reports/detekt/detekt.sarif
+#  lint-badge:
+#    needs: lint
+#    if: github.ref == 'refs/head/main'
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Extract detekt values
+#        id: smells
+#        run: grep -oP '\d+(?= number of total code smells)' build/reports/detekt/detekt.md | sed 's/^/smells=/' >> "${GITHUB_OUTPUT}"
+#
+#      # Create the directory where badges will be saved, if needed
+#      - name: Create destination directory
+#        run: mkdir -p "main"
+#
+#      # Use the output from the `coverage` step
+#      - name: Generate the badge SVG image
+#        uses: emibcn/badge-action@v2.0.3
+#        id: badge
+#        with:
+#          label: 'Detekt'
+#          status: ${{ steps.smells.outputs.smells }}
+#          color: 'blue,555,daf'
+#          path: main/smells-badge.svg
+#
+#      - name: Upload badge as artifact
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: badge
+#          path: main/smells-badge.svg
+#          if-no-files-found: error
+#
+#      - name: Commit badge
+#        continue-on-error: true
+#        run: |
+#          git config --local user.email "action@github.com"
+#          git config --local user.name "GitHub Action"
+#          git add "main/smells-badge.svg"
+#          git commit -m "Add/Update badge"
+#
+#      - name: Push badge commit
+#        uses: ad-m/github-push-action@master
+#        if: ${{ success() }}
+#        with:
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
+#          branch: main
