@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/allisonjoycarter/BongoAPI/compare/v2.0.0...v2.1.0) (2024-03-18)
+
+
+### Features
+
+* include item name with poe item price info ([27b101e](https://github.com/allisonjoycarter/BongoAPI/commit/27b101e5af31c627874e2d52848a759e2c7d49d5))
+
 ## [2.0.0](https://github.com/allisonjoycarter/BongoAPI/compare/v1.1.3...v2.0.0) (2024-03-18)
 
 
