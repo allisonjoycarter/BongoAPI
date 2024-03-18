@@ -8,6 +8,9 @@ import com.catscoffeeandkitchen.features.advice.AdviceRepository
 import com.catscoffeeandkitchen.features.facts.FactsRepository
 import com.catscoffeeandkitchen.features.jokes.JokeRepository
 import com.catscoffeeandkitchen.features.namegenerator.NameGeneratorRepository
+import com.catscoffeeandkitchen.features.poe.PoeBaseData
+import com.catscoffeeandkitchen.features.poe.PoeBaseDataCache
+import com.catscoffeeandkitchen.features.poe.PoeBaseDataRepository
 import com.catscoffeeandkitchen.features.poe.PoeRepository
 import com.catscoffeeandkitchen.features.urbandictionary.UrbanDictionaryRepository
 import com.catscoffeeandkitchen.features.weather.WeatherRepository
@@ -25,6 +28,7 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.config.HoconApplicationConfig
 import kotlinx.serialization.json.Json
 import org.koin.dsl.module
+import java.io.File
 
 val appModule = module {
     val config = HoconApplicationConfig(ConfigFactory.load())
@@ -90,9 +94,18 @@ val appModule = module {
             httpClient = get()
         )
     }
+    single<PoeBaseData> {
+        PoeBaseDataCache(
+            PoeBaseDataRepository(
+                httpClient = get()
+            ),
+            File(config.property("storage.ehcacheFilePath").getString())
+        )
+    }
     single {
         PoeRepository(
-            httpClient = get()
+            httpClient = get(),
+            baseData = get()
         )
     }
 }

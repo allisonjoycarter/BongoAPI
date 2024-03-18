@@ -18,14 +18,11 @@ fun Route.poeRoutes() {
 
     get<PoeEndpoint.Prices.ChaosEquivalent>{ request ->
         try {
-            val data = repository.getCurrencyInChaos(
-                search = request.query,
-                league = null
-            )
+            val data = repository.getCurrencyInChaos(search = request.query)
             call.respond(data)
-        } catch (error: ClientRequestException) {
+        } catch (error: ReturnableHttpException) {
             call.application.log.error(error)
-            call.respond(HttpStatusCode.Companion.BadGateway, "Received ${error.response.status.description}")
+            call.respond(HttpStatusCode.Companion.BadGateway, error.message)
         }
     }
 

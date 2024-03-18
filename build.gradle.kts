@@ -6,6 +6,7 @@ val logback_version: String by project
 
 val koin_version = "3.5.3"
 val open_ai_version = "3.7.0"
+val ehcache_version = "3.10.8"
 
 val bongo_api_version = "0.0.1"
 
@@ -69,6 +70,7 @@ dependencies {
     implementation("io.ktor:ktor-server-resources")
     implementation("io.ktor:ktor-server-auth-jvm")
     implementation("io.ktor:ktor-server-netty-jvm")
+    implementation("io.ktor:ktor-server-auth:$ktor_version")
     implementation("ch.qos.logback:logback-classic:$logback_version")
 
     implementation("io.insert-koin:koin-ktor:$koin_version")
@@ -80,7 +82,7 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation")
     implementation("io.ktor:ktor-client-logging")
 
-    implementation("io.ktor:ktor-server-auth:$ktor_version")
+    implementation("org.ehcache:ehcache:$ehcache_version")
 
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
 

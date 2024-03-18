@@ -45,6 +45,7 @@ output-reports:
   active: true
   exclude:
   # - 'TxtOutputReport'
+  # - 'TxtOutputReport'
   # - 'XmlOutputReport'
   # - 'HtmlOutputReport'
   # - 'MdOutputReport'
@@ -264,6 +265,7 @@ exceptions:
       - 'NumberFormatException'
       - 'ParseException'
       - 'ResponseException'
+      - 'ClientRequestException'
     allowedExceptionNameRegex: '_|(ignore|expected).*'
   ThrowingExceptionFromFinally:
     active: true

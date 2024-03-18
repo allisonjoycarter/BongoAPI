@@ -1,118 +1,93 @@
 package com.catscoffeeandkitchen.features.poe
 
-import com.catscoffeeandkitchen.features.common.ReturnableHttpException
 import com.catscoffeeandkitchen.features.common.toReturnableHttpException
 import com.catscoffeeandkitchen.features.poe.models.CurrencyEquivalent
 import com.catscoffeeandkitchen.features.poe.models.ItemPrice
 import com.catscoffeeandkitchen.features.poe.models.PriceResponse
-import com.catscoffeeandkitchen.features.poe.models.ninja.CurrencyOverview
-import com.catscoffeeandkitchen.features.poe.models.ninja.IndexState
 import com.catscoffeeandkitchen.features.poe.models.poeprices.PriceInfoResult
+import com.catscoffeeandkitchen.features.poe.models.trade.TradeItemID
 import com.catscoffeeandkitchen.features.poe.models.trade.bulk.BulkTradeRequest
 import com.catscoffeeandkitchen.features.poe.models.trade.bulk.BulkTradeResponse
-import com.catscoffeeandkitchen.features.poe.models.trade.search.SearchTradeRequest
-import com.catscoffeeandkitchen.features.poe.models.trade.StaticTradeResponse
-import com.catscoffeeandkitchen.features.poe.models.trade.TradeItemID
-import com.catscoffeeandkitchen.features.poe.models.trade.search.SearchTradeResponse
 import com.catscoffeeandkitchen.features.poe.models.trade.search.SearchIdsResponse
+import com.catscoffeeandkitchen.features.poe.models.trade.search.SearchTradeRequest
+import com.catscoffeeandkitchen.features.poe.models.trade.search.SearchTradeResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
-import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
 import io.ktor.client.statement.bodyAsChannel
-import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.URLProtocol
 import io.ktor.http.contentLength
 import io.ktor.http.contentType
 import io.ktor.http.path
-import io.ktor.util.decodeString
 import io.ktor.util.encodeBase64
-import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.core.isEmpty
-import io.ktor.utils.io.core.readBytes
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import me.xdrop.fuzzywuzzy.FuzzySearch
-import java.nio.ByteBuffer
-import java.nio.charset.Charset
 
-class PoeRepository(private val httpClient: HttpClient) {
+class PoeRepository(
+    private val httpClient: HttpClient,
+    private val baseData: PoeBaseData
+) {
     private val lenientJson = Json {
         isLenient = true
         ignoreUnknownKeys = true
     }
 
-    private suspend fun getLeagues(): List<String> {
-        val response = httpClient.get("https://poe.ninja/api/data/getindexstate")
-        return response.body<IndexState>().economyLeagues.map { it.displayName }
-    }
+    suspend fun getCurrencyInChaos(search: String): List<CurrencyEquivalent> {
+        try {
+            val currencyOverview = baseData.getCurrencyInfo()
+            val currencies = currencyOverview.currencyDetails
 
-    private suspend fun getCurrentLeagueName(): String = getLeagues().first()
-
-    private suspend fun getTradeData(): List<TradeItemID> {
-        val response = httpClient.get("https://www.pathofexile.com/api/trade/data/static")
-        return response.body<StaticTradeResponse>().result.flatMap { it.entries }
-    }
-
-    private suspend fun getCurrencyInfo(league: String? = null): CurrencyOverview {
-        val leagueName = league ?: getCurrentLeagueName()
-        val response = httpClient.get("https://poe.ninja/api/data/currencyoverview" +
-                "?league=$leagueName&type=Currency")
-        return response.body()
-    }
-
-    suspend fun getCurrencyInChaos(search: String, league: String?): List<CurrencyEquivalent> {
-        val currencyOverview = getCurrencyInfo(league)
-        val currencies = currencyOverview.currencyDetails
-
-        val adjustedSearch = if (search.trim().equals("gcp", ignoreCase = true)) {
-            "gemcutter's prism"
-        } else if (search.trim().equals("div", ignoreCase = true)) {
-            "divine"
-        } else {
-            search
-        }
-        val results = FuzzySearch.extractSorted(adjustedSearch, currencies.map { it.name })
-            .filter { it.score > SEARCH_SCORE_THRESHOLD }
-
-        return results.mapNotNull { currencyName ->
-            val line = currencyOverview.lines.find { it.currencyTypeName == currencyName.string }
-            val usePay = line?.pay?.value != null && line.pay.value > 1
-            val paying = currencies.find { details ->
-                if (usePay) details.id == line?.pay?.payCurrencyId
-                else details.id == line?.receive?.payCurrencyId
+            val adjustedSearch = if (search.trim().equals("gcp", ignoreCase = true)) {
+                "gemcutter's prism"
+            } else if (search.trim().equals("div", ignoreCase = true)) {
+                "divine"
+            } else {
+                search
             }
-            val receiving = currencies.find { details ->
-                if (usePay) details.id == line?.pay?.getCurrencyId
-                else details.id == line?.receive?.getCurrencyId
-            }
+            val results = FuzzySearch.extractSorted(adjustedSearch, currencies.map { it.name })
+                .filter { it.score > SEARCH_SCORE_THRESHOLD }
 
-            if (paying == null || receiving == null) null
-            else {
-                CurrencyEquivalent(
-                    paying = ItemPrice(
-                        name = paying.name,
-                        icon = paying.icon,
-                        amount = (if (usePay) 1f else line?.receive?.value?.toFloat()) ?: 1f
-                    ),
-                    receiving = ItemPrice(
-                        name = receiving.name,
-                        icon = receiving.icon,
-                        amount = (if (usePay) line?.pay?.value?.toFloat() else 1f) ?: 1f
+            return results.mapNotNull { currencyName ->
+                val line = currencyOverview.lines.find { it.currencyTypeName == currencyName.string }
+                val usePay = line?.pay?.value != null && line.pay.value > 1
+                val paying = currencies.find { details ->
+                    if (usePay) details.id == line?.pay?.payCurrencyId
+                    else details.id == line?.receive?.payCurrencyId
+                }
+                val receiving = currencies.find { details ->
+                    if (usePay) details.id == line?.pay?.getCurrencyId
+                    else details.id == line?.receive?.getCurrencyId
+                }
+
+                if (paying == null || receiving == null) null
+                else {
+                    CurrencyEquivalent(
+                        paying = ItemPrice(
+                            name = paying.name,
+                            icon = paying.icon,
+                            amount = (if (usePay) 1f else line?.receive?.value?.toFloat()) ?: 1f
+                        ),
+                        receiving = ItemPrice(
+                            name = receiving.name,
+                            icon = receiving.icon,
+                            amount = (if (usePay) line?.pay?.value?.toFloat() else 1f) ?: 1f
+                        )
                     )
-                )
+                }
             }
+        } catch (error: ClientRequestException) {
+            throw error.toReturnableHttpException()
         }
     }
 
     private suspend fun getBulkPricing(itemId: String, tradeData: List<TradeItemID>? = null): CurrencyEquivalent? {
         val result = httpClient.post {
-            url("https://www.pathofexile.com/api/trade/exchange/${getCurrentLeagueName()}")
+            url("https://www.pathofexile.com/api/trade/exchange/${baseData.getCurrentLeagueName()}")
             contentType(ContentType.Application.Json)
             setBody(BulkTradeRequest.forItem(itemId))
         }
@@ -138,7 +113,7 @@ class PoeRepository(private val httpClient: HttpClient) {
 
     suspend fun searchForBulkPricing(search: String): CurrencyEquivalent? {
         try {
-            val tradeData = getTradeData()
+            val tradeData = baseData.getTradeData()
             val result = FuzzySearch.extractOne(search, tradeData.map { it.text })
 
             return getBulkPricing(tradeData[result.index].id, tradeData)
@@ -150,7 +125,7 @@ class PoeRepository(private val httpClient: HttpClient) {
     suspend fun searchForPricing(search: String): CurrencyEquivalent {
         try {
             val initial = httpClient.post {
-                url("https://www.pathofexile.com/api/trade/search/${getCurrentLeagueName()}")
+                url("https://www.pathofexile.com/api/trade/search/${baseData.getCurrentLeagueName()}")
                 contentType(ContentType.Application.Json)
                 setBody(SearchTradeRequest.forSearch(search))
             }
@@ -180,7 +155,7 @@ class PoeRepository(private val httpClient: HttpClient) {
 
     suspend fun searchItemPrice(item: String, league: String? = null): PriceResponse {
         try {
-            val leagueName = league ?: getCurrentLeagueName()
+            val leagueName = league ?: baseData.getCurrentLeagueName()
             val response = httpClient.get {
                 url {
                     protocol = URLProtocol.HTTPS
