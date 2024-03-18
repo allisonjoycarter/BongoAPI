@@ -6,4 +6,7 @@ class ReturnableHttpException(
     val statusCode: HttpStatusCode,
     val responseBody: String? = null,
     cause: Throwable? = null
-): Throwable(cause = cause)
+): Throwable(cause = cause) {
+    override val message: String
+        get() = "Received ${statusCode.value} ${statusCode.description} - $responseBody"
+}

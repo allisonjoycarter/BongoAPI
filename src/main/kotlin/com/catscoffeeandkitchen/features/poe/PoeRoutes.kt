@@ -1,5 +1,6 @@
 package com.catscoffeeandkitchen.features.poe
 
+import com.catscoffeeandkitchen.features.common.ReturnableHttpException
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
@@ -29,19 +30,22 @@ fun Route.poeRoutes() {
     }
 
     get<PoeEndpoint.Prices.Bulk>{ item ->
-        val prices = repository.searchForBulkPricing(item.query) {
-            call.application.log.error(it ?: Exception("A client exception occurred."))
+        try {
+            val prices = repository.searchForBulkPricing(item.query)
+            call.respond(prices ?: "")
+        } catch (error: ReturnableHttpException) {
+            call.application.log.error(error)
+            call.respond(HttpStatusCode.Companion.BadGateway, error.message)
         }
-        call.respond(prices)
     }
 
     get<PoeEndpoint.Prices.Search> { item ->
         try {
             val data = repository.searchForPricing(search = item.query)
             call.respond(data)
-        } catch (error: ClientRequestException) {
+        } catch (error: ReturnableHttpException) {
             call.application.log.error(error)
-            call.respond(HttpStatusCode.Companion.BadGateway, "Received ${error.response.status.description}")
+            call.respond(HttpStatusCode.Companion.BadGateway, error.message)
         }
     }
 

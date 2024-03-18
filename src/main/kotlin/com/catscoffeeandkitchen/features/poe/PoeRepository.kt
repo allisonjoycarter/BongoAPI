@@ -1,5 +1,7 @@
 package com.catscoffeeandkitchen.features.poe
 
+import com.catscoffeeandkitchen.features.common.ReturnableHttpException
+import com.catscoffeeandkitchen.features.common.toReturnableHttpException
 import com.catscoffeeandkitchen.features.poe.models.CurrencyEquivalent
 import com.catscoffeeandkitchen.features.poe.models.ItemPrice
 import com.catscoffeeandkitchen.features.poe.models.PriceResponse
@@ -22,6 +24,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
 import io.ktor.client.statement.bodyAsChannel
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.URLProtocol
 import io.ktor.http.contentLength
@@ -133,46 +136,46 @@ class PoeRepository(private val httpClient: HttpClient) {
         )
     }
 
-    suspend fun searchForBulkPricing(search: String, onLogError: (Throwable?) -> Unit): List<CurrencyEquivalent> {
-        val tradeData = getTradeData()
-        val items = FuzzySearch.extractSorted(search, tradeData.map { it.text }).take(MAX_SEARCH_RESULTS)
+    suspend fun searchForBulkPricing(search: String): CurrencyEquivalent? {
+        try {
+            val tradeData = getTradeData()
+            val result = FuzzySearch.extractOne(search, tradeData.map { it.text })
 
-        return items.mapNotNull { result ->
-            try {
-                getBulkPricing(tradeData[result.index].id, tradeData)
-            } catch (error: ClientRequestException) {
-                // Probably a 429, too many requests
-                onLogError(error)
-                null
-            }
+            return getBulkPricing(tradeData[result.index].id, tradeData)
+        } catch (error: ClientRequestException) {
+            throw error.toReturnableHttpException()
         }
     }
 
     suspend fun searchForPricing(search: String): CurrencyEquivalent {
-        val initial = httpClient.post {
-            url("https://www.pathofexile.com/api/trade/search/${getCurrentLeagueName()}")
-            contentType(ContentType.Application.Json)
-            setBody(SearchTradeRequest.forSearch(search))
-        }
-        val tradeIds = initial.body<SearchIdsResponse>().result.take(MAX_FETCH_IDS).joinToString(",")
-        val response = httpClient.get("https://www.pathofexile.com/api/trade/fetch/$tradeIds")
+        try {
+            val initial = httpClient.post {
+                url("https://www.pathofexile.com/api/trade/search/${getCurrentLeagueName()}")
+                contentType(ContentType.Application.Json)
+                setBody(SearchTradeRequest.forSearch(search))
+            }
+            val tradeIds = initial.body<SearchIdsResponse>().result.take(MAX_FETCH_IDS).joinToString(",")
+            val response = httpClient.get("https://www.pathofexile.com/api/trade/fetch/$tradeIds")
 
-        val listings = response.body<SearchTradeResponse>().result
-        val median = listings[listings.size / 2]
-        return CurrencyEquivalent(
-            paying = ItemPrice(
-                name = median.listing.price.currency,
-                amount = median.listing.price.amount.toFloat(),
-                icon = null
-            ),
-            receiving = ItemPrice(
-                name = median.item?.name.takeUnless { it.orEmpty().isEmpty() }
-                    ?: median.item?.typeLine
-                    ?: median.item?.baseType.orEmpty(),
-                amount = median.item?.stackSize?.toFloat() ?: 1f,
-                icon = median.item?.icon
+            val listings = response.body<SearchTradeResponse>().result
+            val median = listings[listings.size / 2]
+            return CurrencyEquivalent(
+                paying = ItemPrice(
+                    name = median.listing.price.currency,
+                    amount = median.listing.price.amount.toFloat(),
+                    icon = null
+                ),
+                receiving = ItemPrice(
+                    name = median.item?.name.takeUnless { it.orEmpty().isEmpty() }
+                        ?: median.item?.typeLine
+                        ?: median.item?.baseType.orEmpty(),
+                    amount = median.item?.stackSize?.toFloat() ?: 1f,
+                    icon = median.item?.icon
+                )
             )
-        )
+        } catch (error: ClientRequestException) {
+            throw error.toReturnableHttpException()
+        }
     }
 
     suspend fun searchItemPrice(item: String, league: String? = null): PriceResponse {
@@ -206,7 +209,6 @@ class PoeRepository(private val httpClient: HttpClient) {
     companion object {
         const val SEARCH_SCORE_THRESHOLD = 70
         const val OFFERS_TO_USE = 8
-        const val MAX_SEARCH_RESULTS = 3
         const val MAX_FETCH_IDS = 10
     }
 }
