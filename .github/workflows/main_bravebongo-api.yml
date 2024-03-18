@@ -54,8 +54,8 @@ jobs:
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_656D9C87A1A84FF9B68C850C758417B4 }}
           package: '*.jar'
 
-      - name: Create GitHub Release
-        uses: ncipollo/release-action@v1
+      - name: Release with release-please
+        uses: google-github-actions/release-please-action@v4
         with:
-          artifacts: "java-app"
-          generateReleaseNotes: true
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          release-type: simple
