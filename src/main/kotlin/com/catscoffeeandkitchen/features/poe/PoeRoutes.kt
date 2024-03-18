@@ -53,9 +53,9 @@ fun Route.poeRoutes() {
         try {
             val data = repository.searchItemPrice(call.receiveText())
             call.respond(data)
-        } catch (error: ClientRequestException) {
+        } catch (error: ReturnableHttpException) {
             call.application.log.error(error)
-            call.respond(HttpStatusCode.Companion.BadGateway, "Received ${error.response.status.description}")
+            call.respond(HttpStatusCode.Companion.BadGateway, error.message)
         }
     }
 }

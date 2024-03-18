@@ -179,31 +179,35 @@ class PoeRepository(private val httpClient: HttpClient) {
     }
 
     suspend fun searchItemPrice(item: String, league: String? = null): PriceResponse {
-        val leagueName = league ?: getCurrentLeagueName()
-        val response = httpClient.get {
-            url {
-                protocol = URLProtocol.HTTPS
-                host = "www.poeprices.info"
-                path("api")
+        try {
+            val leagueName = league ?: getCurrentLeagueName()
+            val response = httpClient.get {
+                url {
+                    protocol = URLProtocol.HTTPS
+                    host = "www.poeprices.info"
+                    path("api")
 
-                parameters.append("i", item.encodeBase64())
-                parameters.append("l", leagueName)
+                    parameters.append("i", item.encodeBase64())
+                    parameters.append("l", leagueName)
+                }
             }
+
+            val channel = response.bodyAsChannel()
+            channel.awaitContent()
+            val read = channel.readUTF8Line(response.contentLength()?.toInt() ?: 0)
+
+            val price = lenientJson.decodeFromString<PriceInfoResult>(read.orEmpty())
+            return PriceResponse(
+                min = price.min,
+                max = price.max,
+                currency = price.currency,
+                confidence = price.confidence.toFloat(),
+                warning = price.warningMessage.takeIf { it.isNotEmpty() },
+                error = price.errorMessage.takeIf { it.isNotEmpty() }
+            )
+        } catch (error: ClientRequestException) {
+            throw error.toReturnableHttpException()
         }
-
-        val channel = response.bodyAsChannel()
-        channel.awaitContent()
-        val read = channel.readUTF8Line(response.contentLength()?.toInt() ?: 0)
-
-        val price = lenientJson.decodeFromString<PriceInfoResult>(read.orEmpty())
-        return PriceResponse(
-            min = price.min,
-            max = price.max,
-            currency = price.currency,
-            confidence = price.confidence.toFloat(),
-            warning = price.warningMessage.takeIf { it.isNotEmpty() },
-            error = price.errorMessage.takeIf { it.isNotEmpty() }
-        )
     }
 
     companion object {
