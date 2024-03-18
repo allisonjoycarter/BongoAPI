@@ -68,13 +68,13 @@ class PoeRepository(
                 else {
                     CurrencyEquivalent(
                         paying = ItemPrice(
-                            name = paying.name,
-                            icon = paying.icon,
+                            name = if (usePay) receiving.name else paying.name,
+                            icon = if (usePay) receiving.icon else paying.icon,
                             amount = (if (usePay) 1f else line?.receive?.value?.toFloat()) ?: 1f
                         ),
                         receiving = ItemPrice(
-                            name = receiving.name,
-                            icon = receiving.icon,
+                            name = if (usePay) paying.name else receiving.name,
+                            icon = if (usePay) paying.icon else receiving.icon,
                             amount = (if (usePay) line?.pay?.value?.toFloat() else 1f) ?: 1f
                         )
                     )
