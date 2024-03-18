@@ -8,6 +8,6 @@ class UrbanDictionaryEndpoint {
     @Resource("random")
     class Random(val parent: UrbanDictionaryEndpoint)
 
-    @Resource("define/{term}")
+    @Resource("define")
     class Define(val parent: UrbanDictionaryEndpoint, val term: String)
 }

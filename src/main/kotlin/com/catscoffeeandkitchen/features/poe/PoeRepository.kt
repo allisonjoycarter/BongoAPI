@@ -153,9 +153,21 @@ class PoeRepository(
         }
     }
 
-    suspend fun searchItemPrice(item: String, league: String? = null): PriceResponse {
+//    private suspend fun createTradeLink(item: String): String {
+//        return "https://www.pathofexile.com/trade/search/${baseData.getCurrentLeagueName()}" +
+//                "?q=${Json.encodeToString(createTradeRequest(itemFilters.value, itemStats.value, props.item))}"
+//    }
+
+    suspend fun searchItemPrice(item: String): PriceResponse {
         try {
-            val leagueName = league ?: baseData.getCurrentLeagueName()
+            val leagueName = baseData.getCurrentLeagueName()
+            val itemName = item.substringBefore("----")
+                .split("\n")
+                .filterNot { it.isBlank() }
+                .last()
+            println("Checking price for $itemName")
+            println("input = $item")
+
             val response = httpClient.get {
                 url {
                     protocol = URLProtocol.HTTPS
@@ -173,6 +185,7 @@ class PoeRepository(
 
             val price = lenientJson.decodeFromString<PriceInfoResult>(read.orEmpty())
             return PriceResponse(
+                name = itemName,
                 min = price.min,
                 max = price.max,
                 currency = price.currency,

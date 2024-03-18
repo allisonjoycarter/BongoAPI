@@ -75,7 +75,7 @@ class PoeBaseDataCache(
     companion object {
         const val MAX_ENTRIES = 1000L
         const val MAX_HEAP_MB = 10L
-        const val MAX_STORAGE_MB = 10L
+        const val MAX_STORAGE_MB = 100L
         const val DAYS_TO_CACHE = 1L
     }
 }
