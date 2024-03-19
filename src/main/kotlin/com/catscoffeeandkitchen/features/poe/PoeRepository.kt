@@ -4,6 +4,8 @@ import com.catscoffeeandkitchen.features.common.toReturnableHttpException
 import com.catscoffeeandkitchen.features.poe.models.CurrencyEquivalent
 import com.catscoffeeandkitchen.features.poe.models.ItemPrice
 import com.catscoffeeandkitchen.features.poe.models.PriceResponse
+import com.catscoffeeandkitchen.features.poe.models.ninja.CurrencyDetails
+import com.catscoffeeandkitchen.features.poe.models.ninja.CurrencyOverview
 import com.catscoffeeandkitchen.features.poe.models.poeprices.PriceInfoResult
 import com.catscoffeeandkitchen.features.poe.models.trade.TradeItemID
 import com.catscoffeeandkitchen.features.poe.models.trade.bulk.BulkTradeRequest
@@ -37,6 +39,39 @@ class PoeRepository(
         ignoreUnknownKeys = true
     }
 
+    private fun createCurrencyEquivalent(
+        name: String,
+        overview: CurrencyOverview,
+        currencies: List<CurrencyDetails>
+    ): CurrencyEquivalent? {
+        val line = overview.lines.find { it.currencyTypeName == name }
+        val usePay = line?.pay?.value != null && line.pay.value > 1
+        val paying = currencies.find { details ->
+            if (usePay) details.id == line?.pay?.payCurrencyId
+            else details.id == line?.receive?.payCurrencyId
+        }
+        val receiving = currencies.find { details ->
+            if (usePay) details.id == line?.pay?.getCurrencyId
+            else details.id == line?.receive?.getCurrencyId
+        }
+
+        return if (paying == null || receiving == null) null
+        else {
+            CurrencyEquivalent(
+                paying = ItemPrice(
+                    name = if (usePay) receiving.name else paying.name,
+                    icon = if (usePay) receiving.icon else paying.icon,
+                    amount = (if (usePay) 1f else line?.receive?.value?.toFloat()) ?: 1f
+                ),
+                receiving = ItemPrice(
+                    name = if (usePay) paying.name else receiving.name,
+                    icon = if (usePay) paying.icon else receiving.icon,
+                    amount = (if (usePay) line?.pay?.value?.toFloat() else 1f) ?: 1f
+                )
+            )
+        }
+    }
+
     suspend fun getCurrencyInChaos(search: String): List<CurrencyEquivalent> {
         try {
             val currencyOverview = baseData.getCurrencyInfo()
@@ -55,32 +90,11 @@ class PoeRepository(
                 .filter { it.score > SEARCH_SCORE_THRESHOLD }
 
             return results.mapNotNull { currencyName ->
-                val line = currencyOverview.lines.find { it.currencyTypeName == currencyName.string }
-                val usePay = line?.pay?.value != null && line.pay.value > 1
-                val paying = currencies.find { details ->
-                    if (usePay) details.id == line?.pay?.payCurrencyId
-                    else details.id == line?.receive?.payCurrencyId
-                }
-                val receiving = currencies.find { details ->
-                    if (usePay) details.id == line?.pay?.getCurrencyId
-                    else details.id == line?.receive?.getCurrencyId
-                }
-
-                if (paying == null || receiving == null) null
-                else {
-                    CurrencyEquivalent(
-                        paying = ItemPrice(
-                            name = if (usePay) receiving.name else paying.name,
-                            icon = if (usePay) receiving.icon else paying.icon,
-                            amount = (if (usePay) 1f else line?.receive?.value?.toFloat()) ?: 1f
-                        ),
-                        receiving = ItemPrice(
-                            name = if (usePay) paying.name else receiving.name,
-                            icon = if (usePay) paying.icon else receiving.icon,
-                            amount = (if (usePay) line?.pay?.value?.toFloat() else 1f) ?: 1f
-                        )
-                    )
-                }
+                createCurrencyEquivalent(
+                    name = currencyName.string,
+                    overview = currencyOverview,
+                    currencies = currencies
+                )
             }
         } catch (error: ClientRequestException) {
             throw error.toReturnableHttpException()
