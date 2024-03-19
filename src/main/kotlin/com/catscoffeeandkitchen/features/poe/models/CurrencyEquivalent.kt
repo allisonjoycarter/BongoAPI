@@ -5,5 +5,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class CurrencyEquivalent(
     val paying: ItemPrice,
-    val receiving: ItemPrice
+    val receiving: ItemPrice,
+    val tradeUrl: String? = null
 )

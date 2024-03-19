@@ -44,6 +44,8 @@ class PoeRepository(
 
             val adjustedSearch = if (search.trim().equals("gcp", ignoreCase = true)) {
                 "gemcutter's prism"
+            } else if (search.trim().equals("alt", ignoreCase = true)) {
+                "alteration"
             } else if (search.trim().equals("div", ignoreCase = true)) {
                 "divine"
             } else {
@@ -68,13 +70,13 @@ class PoeRepository(
                 else {
                     CurrencyEquivalent(
                         paying = ItemPrice(
-                            name = paying.name,
-                            icon = paying.icon,
+                            name = if (usePay) receiving.name else paying.name,
+                            icon = if (usePay) receiving.icon else paying.icon,
                             amount = (if (usePay) 1f else line?.receive?.value?.toFloat()) ?: 1f
                         ),
                         receiving = ItemPrice(
-                            name = receiving.name,
-                            icon = receiving.icon,
+                            name = if (usePay) paying.name else receiving.name,
+                            icon = if (usePay) paying.icon else receiving.icon,
                             amount = (if (usePay) line?.pay?.value?.toFloat() else 1f) ?: 1f
                         )
                     )
@@ -85,6 +87,10 @@ class PoeRepository(
         }
     }
 
+    private fun BulkTradeResponse.Offer.toDetailString(): String {
+        return "${item.amount} ${item.currency} = ${exchange.amount} ${exchange.currency}"
+    }
+
     private suspend fun getBulkPricing(itemId: String, tradeData: List<TradeItemID>? = null): CurrencyEquivalent? {
         val result = httpClient.post {
             url("https://www.pathofexile.com/api/trade/exchange/${baseData.getCurrentLeagueName()}")
@@ -92,22 +98,31 @@ class PoeRepository(
             setBody(BulkTradeRequest.forItem(itemId))
         }
 
-        val tradeOffers = result.body<BulkTradeResponse>().result.entries
+        val tradeResponse = result.body<BulkTradeResponse>()
+        val tradeOffers = tradeResponse.result.entries
             .filter { it.value.listing.offers.isNotEmpty() }
             .take(OFFERS_TO_USE)
-            .sortedByDescending { tradeEntry ->
-                tradeEntry.value.listing.offers.firstOrNull()?.let { offer ->
-                    offer.item.amount / offer.exchange.amount
-                } ?: 0f
-            }
 
         if (tradeOffers.isEmpty()) return null
 
-        val median = tradeOffers[(OFFERS_TO_USE / 2).coerceAtMost(tradeOffers.lastIndex)].value
-        val offer = median.listing.offers.first()
+        val mostCommon = tradeOffers
+            .groupingBy { it.value.listing.offers.first().toDetailString() }
+            .eachCount()
+            .maxByOrNull { it.value }?.key
+
+        val commonEntry = tradeOffers.first { entry ->
+            entry.value.listing.offers.first().toDetailString() == mostCommon
+        }
+        val offer = commonEntry.value.listing.offers.first()
+
+        val tradeSite = "https://www.pathofexile.com"
         return offer.toCurrencyEquivalent(
-            payingIcon = tradeData?.find { it.text == offer.exchange.currency }?.image,
-            receivingIcon = tradeData?.find { it.text == offer.item.currency }?.image,
+            payingIcon = tradeData?.find { it.text.contains(offer.exchange.currency, ignoreCase = true) }?.image
+                ?.let { "$tradeSite$it" },
+            receivingIcon = tradeData?.find { it.text.contains(offer.item.currency, ignoreCase = true) }?.image
+                ?.let { "$tradeSite$it" },
+        ).copy(
+            tradeUrl = "$tradeSite/trade/exchange/${baseData.getCurrentLeagueName()}/${tradeResponse.id}"
         )
     }
 
@@ -129,34 +144,38 @@ class PoeRepository(
                 contentType(ContentType.Application.Json)
                 setBody(SearchTradeRequest.forSearch(search))
             }
-            val tradeIds = initial.body<SearchIdsResponse>().result.take(MAX_FETCH_IDS).joinToString(",")
+            val tradeResponse = initial.body<SearchIdsResponse>()
+            val tradeIds = tradeResponse.result.take(MAX_FETCH_IDS).joinToString(",")
             val response = httpClient.get("https://www.pathofexile.com/api/trade/fetch/$tradeIds")
 
             val listings = response.body<SearchTradeResponse>().result
-            val median = listings[listings.size / 2]
+            val mostCommon = listings
+                .groupingBy { it.listing.price.amount }
+                .eachCount()
+                .maxByOrNull { it.value }?.key
+
+            val commonEntry = listings.first { it.listing.price.amount == mostCommon }
             return CurrencyEquivalent(
                 paying = ItemPrice(
-                    name = median.listing.price.currency,
-                    amount = median.listing.price.amount.toFloat(),
+                    name = commonEntry.listing.price.currency,
+                    amount = commonEntry.listing.price.amount.toFloat(),
                     icon = null
                 ),
                 receiving = ItemPrice(
-                    name = median.item?.name.takeUnless { it.orEmpty().isEmpty() }
-                        ?: median.item?.typeLine
-                        ?: median.item?.baseType.orEmpty(),
-                    amount = median.item?.stackSize?.toFloat() ?: 1f,
-                    icon = median.item?.icon
+                    name = commonEntry.item?.name.takeUnless { it.orEmpty().isEmpty() }
+                        ?: commonEntry.item?.typeLine
+                        ?: commonEntry.item?.baseType.orEmpty(),
+                    amount = commonEntry.item?.stackSize?.toFloat() ?: 1f,
+                    icon = commonEntry.item?.icon
                 )
+            ).copy(
+                tradeUrl = "https://pathofexile.com/trade/search" +
+                        "/${baseData.getCurrentLeagueName()}/${tradeResponse.id}"
             )
         } catch (error: ClientRequestException) {
             throw error.toReturnableHttpException()
         }
     }
-
-//    private suspend fun createTradeLink(item: String): String {
-//        return "https://www.pathofexile.com/trade/search/${baseData.getCurrentLeagueName()}" +
-//                "?q=${Json.encodeToString(createTradeRequest(itemFilters.value, itemStats.value, props.item))}"
-//    }
 
     suspend fun searchItemPrice(item: String): PriceResponse {
         try {
@@ -200,7 +219,7 @@ class PoeRepository(
 
     companion object {
         const val SEARCH_SCORE_THRESHOLD = 70
-        const val OFFERS_TO_USE = 8
+        const val OFFERS_TO_USE = 10
         const val MAX_FETCH_IDS = 10
     }
 }

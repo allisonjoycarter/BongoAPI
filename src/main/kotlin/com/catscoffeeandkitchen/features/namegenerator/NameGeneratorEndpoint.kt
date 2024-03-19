@@ -1,6 +1,7 @@
 package com.catscoffeeandkitchen.features.namegenerator
 
 import io.ktor.resources.Resource
+import kotlinx.serialization.EncodeDefault
 
 @Resource("/name-generator")
 class NameGeneratorEndpoint {
@@ -9,7 +10,7 @@ class NameGeneratorEndpoint {
     class Category(
         val parent: NameGeneratorEndpoint,
         val category: String,
-        val amount: Int = 1,
+        @EncodeDefault val amount: Int = 1,
         val context: String? = null
     )
 }
