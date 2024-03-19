@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.2.0](https://github.com/allisonjoycarter/BongoAPI/compare/v2.1.0...v2.2.0) (2024-03-19)
+
+
+### Features
+
+* include PoE trade URL with searches and use most common pricing ([fd71635](https://github.com/allisonjoycarter/BongoAPI/commit/fd71635ecf6f87dc0a1966279a3b1d694fd8acee))
+
+
+### Bug Fixes
+
+* Attempted to fix cheap poe currency with /chaos ([2e27a4d](https://github.com/allisonjoycarter/BongoAPI/commit/2e27a4d0dafcab0a48ed6f35b2d8f2e8e0b4a048))
+* Name generator always returning one name ([1b58505](https://github.com/allisonjoycarter/BongoAPI/commit/1b58505ec3a71f46da38492a990da73d001b6b6c))
+
 ## [2.1.0](https://github.com/allisonjoycarter/BongoAPI/compare/v2.0.0...v2.1.0) (2024-03-18)
 
 
