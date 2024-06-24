@@ -5,7 +5,7 @@ val kotlin_version: String by project
 val logback_version: String by project
 
 val koin_version = "3.5.3"
-val open_ai_version = "3.7.0"
+val open_ai_version = "3.8.1"
 val ehcache_version = "3.10.8"
 
 val bongo_api_version = "0.0.1"
